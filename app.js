@@ -165,6 +165,36 @@ app.get("/auth-endpoint", auth, (request, response) => {
   response.status(200).json({ message: "Authenticated endpoint", user: request.user, isAdmin: request.isAdmin });
 });
 
+// Authenticated endpoint to get user (Read)
+app.get("/user", auth, (request, response) => {
+  const userId = request.user.userId;
+
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        return response.status(404).json({ message: "User not found" });
+      }
+      response.status(200).json(user);
+    })
+    .catch((error) => {
+      response.status(500).json({ message: "Error fetching user", error });
+    });
+});
+
+app.get("/users", auth, (request, response) => {
+  if (!request.user.isAdmin) {
+    return response.status(403).json({ message: "Forbidden: Only admins can access this endpoint." });
+  }
+
+  User.find()
+    .then((users) => {
+      response.status(200).json(users);
+    })
+    .catch((error) => {
+      response.status(500).json({ message: "Error fetching users", error });
+    });
+});
+
 // ... (other routes)
 
 module.exports = app;
