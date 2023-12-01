@@ -166,8 +166,9 @@ app.post("/admin-login-dummy", (request, response) => {
     response.status(401).json({ message: "Invalid dummy admin credentials" });
   }
 });
+
 app.get("/auth-endpoint", auth, (request, response) => {
-  response.status(200).json({ message: "Authenticated endpoint", user: request.user, isAdmin: "true" });
+  response.status(200).json({ message: "Authenticated endpoint", user: request.user, isAdmin: request.isAdmin });
 });
 
 // ... (other routes)
