@@ -9,6 +9,7 @@ const cors = require("cors");
 const dbConnect = require("./db/dbConnect");
 const User = require("./db/userModel");
 const auth = require("./auth");
+const departmentController = require("./controller/departmentController"); // Update the path
 
 // execute database connection
 dbConnect();
@@ -42,14 +43,14 @@ app.get("/", (request, response, next) => {
 // register endpoint
 app.post("/register", (request, response) => {
   bcrypt.hash(request.body.password, 10)
-  .then((hashedPassword) => {
-    const user = new User({
-      email: request.body.email,
-      password: hashedPassword,
-      location: request.body.location,
-      fullName: request.body.fullName,
-      department: request.body.department, // Include department in the user object
-    });
+    .then((hashedPassword) => {
+      const user = new User({
+        email: request.body.email,
+        password: hashedPassword,
+        location: request.body.location,
+        fullName: request.body.fullName,
+        department: request.body.department,
+      });
 
       user.save()
         .then((result) => {
@@ -77,14 +78,10 @@ app.post("/register", (request, response) => {
 app.post("/login", (request, response) => {
   // check if email exists
   User.findOne({ email: request.body.email })
-
-    // if email exists
     .then((user) => {
       // compare the password entered and the hashed password found
       bcrypt
         .compare(request.body.password, user.password)
-
-        // if the passwords match
         .then((passwordCheck) => {
           // check if password matches
           if (!passwordCheck) {
@@ -99,7 +96,7 @@ app.post("/login", (request, response) => {
             {
               userId: user._id,
               userEmail: user.email,
-              isAdmin: user.isAdmin, // Assuming you have an 'isAdmin' field in your user model
+              isAdmin: user.isAdmin,
             },
             "RANDOM-TOKEN",
             { expiresIn: "24h" }
@@ -112,7 +109,6 @@ app.post("/login", (request, response) => {
             token,
           });
         })
-        // catch error if password does not match
         .catch((error) => {
           response.status(400).send({
             message: "Passwords do not match",
@@ -120,7 +116,6 @@ app.post("/login", (request, response) => {
           });
         });
     })
-    // catch error if email does not exist
     .catch((e) => {
       response.status(404).send({
         message: "Email not found",
@@ -147,9 +142,7 @@ app.post("/admin-action", auth, (request, response) => {
 app.post("/admin-login-dummy", (request, response) => {
   const { email, password } = request.body;
 
-  // Check if the provided credentials match the dummy admin credentials
   if (email === "admin@example.com" && password === "adminpassword") {
-    // Generate a dummy admin token
     const token = jwt.sign(
       { userId: "dummyAdminId", userEmail: "admin@example.com", isAdmin: true },
       "RANDOM-TOKEN",
@@ -197,6 +190,39 @@ app.get("/users", auth, (request, response) => {
     });
 });
 
+// Create a new department (only accessible by admin)
+app.post("/departments", auth, (req, res) => {
+  if (req.isAdmin) {
+    departmentController.createDepartment(req, res);
+  } else {
+    res.status(403).json({ message: "Forbidden: Only admins can create departments." });
+  }
+});
+
+// Get all departments (accessible by all users)
+app.get("/departments", departmentController.getAllDepartments);
+
+// Get a specific department by ID (accessible by all users)
+app.get("/departments/:departmentId", departmentController.getDepartmentById);
+
+// Update a department by ID (only accessible by admin)
+app.put("/departments/:departmentId", auth, (req, res) => {
+  if (req.isAdmin) {
+    departmentController.updateDepartmentById(req, res);
+  } else {
+    res.status(403).json({ message: "Forbidden: Only admins can update departments." });
+  }
+});
+
+// Delete a department by ID (only accessible by admin)
+app.delete("/departments/:departmentId", auth, (req, res) => {
+  if (req.isAdmin) {
+    departmentController.deleteDepartmentById(req, res);
+  } else {
+    res.status(403).json({ message: "Forbidden: Only admins can delete departments." });
+  }
+});
+
 // Update a user (Edit)
 app.put("/users/:userId", auth, async (req, res) => {
   try {
@@ -216,7 +242,6 @@ app.put("/users/:userId", auth, async (req, res) => {
     res.status(500).json({ message: "Error updating user", error });
   }
 });
-
 
 // Delete a user
 app.delete("/users/:userId", auth, async (req, res) => {
