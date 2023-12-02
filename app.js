@@ -42,13 +42,14 @@ app.get("/", (request, response, next) => {
 // register endpoint
 app.post("/register", (request, response) => {
   bcrypt.hash(request.body.password, 10)
-    .then((hashedPassword) => {
-      const user = new User({
-        email: request.body.email,
-        password: hashedPassword,
-        location: request.body.location, // Include location in the user object
-        fullName: request.body.fullName, // Include fullName in the user object
-      });
+  .then((hashedPassword) => {
+    const user = new User({
+      email: request.body.email,
+      password: hashedPassword,
+      location: request.body.location,
+      fullName: request.body.fullName,
+      department: request.body.department, // Include department in the user object
+    });
 
       user.save()
         .then((result) => {

@@ -18,6 +18,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide a full name!"],
   },
+  department: {
+    type: String, // Add the department field
+    required: [true, "Please provide a department!"],
+  },
 });
 
 module.exports = mongoose.model.Users || mongoose.model("Users", UserSchema);
