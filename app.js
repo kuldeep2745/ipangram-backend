@@ -3,7 +3,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const cors = require("cors"); // Import the cors middleware
+const cors = require("cors");
 
 // require database connection
 const dbConnect = require("./db/dbConnect");
@@ -181,6 +181,7 @@ app.get("/user", auth, (request, response) => {
     });
 });
 
+// Get all users
 app.get("/users", auth, (request, response) => {
   if (!request.user.isAdmin) {
     return response.status(403).json({ message: "Forbidden: Only admins can access this endpoint." });
@@ -193,6 +194,26 @@ app.get("/users", auth, (request, response) => {
     .catch((error) => {
       response.status(500).json({ message: "Error fetching users", error });
     });
+});
+
+// Delete a user
+app.delete("/users/:userId", auth, async (req, res) => {
+  try {
+    if (!req.isAdmin) {
+      return res.status(403).json({ message: "Forbidden: Only admins can delete users." });
+    }
+
+    const userId = req.params.userId;
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(deletedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting user", error });
+  }
 });
 
 // ... (other routes)
