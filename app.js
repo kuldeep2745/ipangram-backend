@@ -196,6 +196,27 @@ app.get("/users", auth, (request, response) => {
     });
 });
 
+// Update a user (Edit)
+app.put("/users/:userId", auth, async (req, res) => {
+  try {
+    if (!req.isAdmin) {
+      return res.status(403).json({ message: "Forbidden: Only admins can update users." });
+    }
+
+    const userId = req.params.userId;
+    const updatedUser = await User.findByIdAndUpdate(userId, req.body, { new: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating user", error });
+  }
+});
+
+
 // Delete a user
 app.delete("/users/:userId", auth, async (req, res) => {
   try {
