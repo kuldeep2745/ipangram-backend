@@ -176,18 +176,24 @@ app.get("/user", auth, (request, response) => {
 });
 
 // Get all users
-app.get("/users", auth, (request, response) => {
-  if (!request.user.isAdmin) {
-    return response.status(403).json({ message: "Forbidden: Only admins can access this endpoint." });
-  }
+app.get("/users", auth, async (request, response) => {
+  try {
+    if (!request.user.isAdmin) {
+      return response.status(403).json({ message: "Forbidden: Only admins can access this endpoint." });
+    }
 
-  User.find()
-    .then((users) => {
-      response.status(200).json(users);
-    })
-    .catch((error) => {
-      response.status(500).json({ message: "Error fetching users", error });
-    });
+    let sortField = request.query.sortField || 'fullName'; // Default sorting field is 'fullName'
+    let sortOrder = request.query.sortOrder || 'asc'; // Default sorting order is 'asc'
+
+    const sortOptions = {};
+    sortOptions[sortField] = sortOrder === 'asc' ? 1 : -1;
+
+    const users = await User.find().sort(sortOptions);
+
+    response.status(200).json(users);
+  } catch (error) {
+    response.status(500).json({ message: "Error fetching users", error });
+  }
 });
 
 // Create a new department (only accessible by admin)
