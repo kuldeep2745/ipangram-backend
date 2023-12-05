@@ -42,7 +42,8 @@ app.get("/", (request, response, next) => {
 
 // register endpoint
 app.post("/register", (request, response) => {
-  bcrypt.hash(request.body.password, 10)
+  bcrypt
+    .hash(request.body.password, 10)
     .then((hashedPassword) => {
       const user = new User({
         email: request.body.email,
@@ -52,7 +53,8 @@ app.post("/register", (request, response) => {
         department: request.body.department,
       });
 
-      user.save()
+      user
+        .save()
         .then((result) => {
           response.status(201).send({
             message: "User Created Successfully",
@@ -149,14 +151,22 @@ app.post("/admin-login-dummy", (request, response) => {
       { expiresIn: "24h" }
     );
 
-    response.status(200).json({ message: "Dummy Admin login successful", token });
+    response
+      .status(200)
+      .json({ message: "Dummy Admin login successful", token });
   } else {
     response.status(401).json({ message: "Invalid dummy admin credentials" });
   }
 });
 
 app.get("/auth-endpoint", auth, (request, response) => {
-  response.status(200).json({ message: "Authenticated endpoint", user: request.user, isAdmin: request.isAdmin });
+  response
+    .status(200)
+    .json({
+      message: "Authenticated endpoint",
+      user: request.user,
+      isAdmin: request.isAdmin,
+    });
 });
 
 // Authenticated endpoint to get user (Read)
@@ -179,14 +189,16 @@ app.get("/user", auth, (request, response) => {
 app.get("/users", auth, async (request, response) => {
   try {
     if (!request.user.isAdmin) {
-      return response.status(403).json({ message: "Forbidden: Only admins can access this endpoint." });
+      return response
+        .status(403)
+        .json({ message: "Forbidden: Only admins can access this endpoint." });
     }
 
-    let sortField = request.query.sortField || 'fullName'; // Default sorting field is 'fullName'
-    let sortOrder = request.query.sortOrder || 'asc'; // Default sorting order is 'asc'
+    let sortField = request.query.sortField || "fullName"; // Default sorting field is 'fullName'
+    let sortOrder = request.query.sortOrder || "asc"; // Default sorting order is 'asc'
 
     const sortOptions = {};
-    sortOptions[sortField] = sortOrder === 'asc' ? 1 : -1;
+    sortOptions[sortField] = sortOrder === "asc" ? 1 : -1;
 
     const users = await User.find().sort(sortOptions);
 
@@ -201,7 +213,9 @@ app.post("/departments", auth, (req, res) => {
   if (req.isAdmin) {
     departmentController.createDepartment(req, res);
   } else {
-    res.status(403).json({ message: "Forbidden: Only admins can create departments." });
+    res
+      .status(403)
+      .json({ message: "Forbidden: Only admins can create departments." });
   }
 });
 
@@ -216,7 +230,9 @@ app.put("/departments/:departmentId", auth, (req, res) => {
   if (req.isAdmin) {
     departmentController.updateDepartmentById(req, res);
   } else {
-    res.status(403).json({ message: "Forbidden: Only admins can update departments." });
+    res
+      .status(403)
+      .json({ message: "Forbidden: Only admins can update departments." });
   }
 });
 
@@ -225,7 +241,9 @@ app.delete("/departments/:departmentId", auth, (req, res) => {
   if (req.isAdmin) {
     departmentController.deleteDepartmentById(req, res);
   } else {
-    res.status(403).json({ message: "Forbidden: Only admins can delete departments." });
+    res
+      .status(403)
+      .json({ message: "Forbidden: Only admins can delete departments." });
   }
 });
 
@@ -233,11 +251,15 @@ app.delete("/departments/:departmentId", auth, (req, res) => {
 app.put("/users/:userId", auth, async (req, res) => {
   try {
     if (!req.isAdmin) {
-      return res.status(403).json({ message: "Forbidden: Only admins can update users." });
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Only admins can update users." });
     }
 
     const userId = req.params.userId;
-    const updatedUser = await User.findByIdAndUpdate(userId, req.body, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(userId, req.body, {
+      new: true,
+    });
 
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
@@ -253,7 +275,9 @@ app.put("/users/:userId", auth, async (req, res) => {
 app.delete("/users/:userId", auth, async (req, res) => {
   try {
     if (!req.isAdmin) {
-      return res.status(403).json({ message: "Forbidden: Only admins can delete users." });
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Only admins can delete users." });
     }
 
     const userId = req.params.userId;

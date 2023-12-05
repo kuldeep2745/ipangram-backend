@@ -5,7 +5,9 @@ const Department = require("../model/departmentModel");
 const createDepartment = async (req, res) => {
   try {
     const department = await Department.create(req.body);
-    res.status(201).json({ message: "Department created successfully", department });
+    res
+      .status(201)
+      .json({ message: "Department created successfully", department });
   } catch (error) {
     res.status(500).json({ message: "Error creating department", error });
   }
@@ -39,7 +41,11 @@ const getDepartmentById = async (req, res) => {
 const updateDepartmentById = async (req, res) => {
   const departmentId = req.params.departmentId;
   try {
-    const updatedDepartment = await Department.findByIdAndUpdate(departmentId, req.body, { new: true });
+    const updatedDepartment = await Department.findByIdAndUpdate(
+      departmentId,
+      req.body,
+      { new: true }
+    );
     if (!updatedDepartment) {
       return res.status(404).json({ message: "Department not found" });
     }
