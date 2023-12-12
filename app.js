@@ -9,7 +9,7 @@ const cors = require("cors");
 const dbConnect = require("./db/dbConnect");
 const User = require("./db/userModel");
 const auth = require("./auth");
-const departmentController = require("./controller/departmentController"); // Update the path
+const departmentController = require("./controller/departmentController");
 
 // execute database connection
 dbConnect();
@@ -29,11 +29,22 @@ app.use((req, res, next) => {
 });
 
 // use cors middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      'https://ipangram-frontend-bxb9r6xqt-kuldeep-rathores-projects.vercel.app',
+      // Add other allowed origins as needed
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204,
+  })
+);
 
 // body parser configuration
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 app.get("/", (request, response, next) => {
   response.json({ message: "Hey! This is your server response!" });
